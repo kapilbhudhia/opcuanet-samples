@@ -16,7 +16,11 @@ namespace Client
 
         public static void Main(string[] args)
         {
-            string serverIP = (args != null & args.Length > 0) ? args[0] : "192.168.1.3";
+            if (args == null || args.Length == 0)
+            {
+                Console.WriteLine("Enter ip address of the server (or localhost)");
+            }
+            string serverIP = args[0];
 
             //// If the server domain name does not match localhost just replace it
             //// e.g. with the IP address or name of the server machine.

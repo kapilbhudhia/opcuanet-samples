@@ -17,7 +17,11 @@ namespace Server
 
         public static void Main(string[] args)
         {
-            string serverIP = (args != null & args.Length > 0) ? args[0] : "192.168.1.3";
+            if (args == null || args.Length == 0)
+            {
+                Console.WriteLine("Enter a valid ip address for the server (or localhost)");
+            }
+            string serverIP = args[0];
             #region 1st Way: Use the OpcServer class.
             {
                 //// The OpcServer class interacts with one or more OPC UA clients using one of
