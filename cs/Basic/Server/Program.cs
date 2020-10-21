@@ -20,6 +20,7 @@ namespace Server
             if (args == null || args.Length == 0)
             {
                 Console.WriteLine("Enter a valid ip address for the server (or localhost)");
+                return;
             }
             string serverIP = args[0];
             #region 1st Way: Use the OpcServer class.

@@ -19,6 +19,7 @@ namespace Client
             if (args == null || args.Length == 0)
             {
                 Console.WriteLine("Enter ip address of the server (or localhost)");
+                return;
             }
             string serverIP = args[0];
 
