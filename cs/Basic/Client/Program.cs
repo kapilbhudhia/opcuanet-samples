@@ -34,16 +34,17 @@ namespace Client
                 try
                 {
                     var client = new OpcClient(serverURL);
-
+                    Console.WriteLine($"Connected on {serverURL}");
                     client.Connect();
-                    // while (true)
-                    // {
-                    //     Program.CommunicateWithServer(client);
-                    //     Thread.Sleep(1000);
-
-                    // }
                     var node = client.BrowseNode(OpcObjectTypes.ObjectsFolder);
                     Browse(node);
+
+                    while (true)
+                    {
+                        Program.CommunicateWithServer(client);
+                        Thread.Sleep(1000);
+
+                    }
 
                     client.Disconnect();
                 }
