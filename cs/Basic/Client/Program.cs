@@ -4,6 +4,8 @@ namespace Client
 {
     using System;
     using Opc.UaFx.Client;
+    using Opc.UaFx;
+    using System.Threading;
 
     /// <summary>
     /// This sample demonstrates how to implement a primitive OPC UA client.
@@ -14,19 +16,41 @@ namespace Client
 
         public static void Main(string[] args)
         {
+            string serverIP = (args != null & args.Length > 0) ? args[0] : "192.168.1.3";
+
             //// If the server domain name does not match localhost just replace it
             //// e.g. with the IP address or name of the server machine.
 
+            //string serverURL = "https://192.168.0.102:4840/SampleServer";
+            //string serverURL = "opc.tcp://localhost:4840/SampleServer";
+            string serverURL = $"opc.tcp://{serverIP}:4840/SampleServer";
             #region 1st Way: Use the OpcClient class.
             {
                 // The OpcClient class interacts with one OPC UA server. While this class
                 // provides session based access to the different OPC UA services of the
                 // server, it does not implement a main loop.
-                var client = new OpcClient("opc.tcp://localhost:4840/SampleServer");
+                //var client = new OpcClient("opc.tcp://localhost:4840/SampleServer");
 
-                client.Connect();
-                Program.CommunicateWithServer(client);
-                client.Disconnect();
+                try
+                {
+                    var client = new OpcClient(serverURL);
+
+                    client.Connect();
+                    // while (true)
+                    // {
+                    //     Program.CommunicateWithServer(client);
+                    //     Thread.Sleep(1000);
+
+                    // }
+                    var node = client.BrowseNode(OpcObjectTypes.ObjectsFolder);
+                    Browse(node);
+
+                    client.Disconnect();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
             #endregion
 
@@ -54,11 +78,24 @@ namespace Client
 
         private static void CommunicateWithServer(OpcClient client)
         {
-            Console.WriteLine("ReadNode: {0}", client.ReadNode("ns=2;s=Machine_1/IsActive"));
-            client.WriteNode("ns=2;s=Machine_1/IsActive", false);
-            Console.WriteLine("ReadNode: {0}", client.ReadNode("ns=2;s=Machine_1/IsActive"));
-        }
+            // Console.WriteLine("ReadNode: {0}", client.ReadNode("ns=2;s=Machine_1/IsActive"));
+            // client.WriteNode("ns=2;s=Machine_1/IsActive", false);
+            // Console.WriteLine("ReadNode: {0}", client.ReadNode("ns=2;s=Machine_1/IsActive"));
 
+            Console.WriteLine("ReadNode: {0}", client.ReadNode("ns=2;s=Temperature"));
+        }
+        private static void Browse(OpcNodeInfo node, int level = 0)
+        {
+            Console.WriteLine("{0}{1}({2})",
+                    new string('.', level * 4),
+                    node.Attribute(OpcAttribute.DisplayName).Value,
+                    node.NodeId);
+
+            level++;
+
+            foreach (var childNode in node.Children())
+                Browse(childNode, level);
+        }
         private static void HandleAppStarted(object sender, EventArgs e)
         {
             Program.CommunicateWithServer(((OpcClientApplication)sender).Client);

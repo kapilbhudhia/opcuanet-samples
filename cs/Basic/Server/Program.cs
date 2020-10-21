@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Traeger Industry Components GmbH. All Rights Reserved.
 
+using System;
+using System.Threading;
+using Opc.UaFx;
+
 namespace Server
 {
     using Opc.UaFx.Server;
@@ -13,15 +17,34 @@ namespace Server
 
         public static void Main(string[] args)
         {
+            string serverIP = (args != null & args.Length > 0) ? args[0] : "192.168.1.3";
             #region 1st Way: Use the OpcServer class.
             {
                 //// The OpcServer class interacts with one or more OPC UA clients using one of
                 //// the registered base addresses of the server. While this class provides the
                 //// different OPC UA services defined by OPC UA, it does not implement a main loop.
-                //var server = new OpcServer("opc.tcp://localhost:4840/SampleServer", new SampleNodeManager());
 
-                //server.Start();
-                //server.Stop();
+                //string serverURL = "https://localhost:4840/SampleServer";
+                //string serverURL = "opc.tcp://localhost:4840/SampleServer";
+                string serverURL = $"opc.tcp://{serverIP}:4840/SampleServer";
+                var temperatureNode = new OpcDataVariableNode<double>("Temperature", 100.0);
+
+                //using var server = new OpcServer(serverURL, temperatureNode);
+                using var server = new OpcServer(serverURL, temperatureNode);
+                server.Start();
+
+                Console.WriteLine("Started the server at {0}", serverURL);
+
+                while (true)
+                {
+                    if (temperatureNode.Value == 110)
+                        temperatureNode.Value = 100;
+                    else
+                        temperatureNode.Value++;
+
+                    temperatureNode.ApplyChanges(server.SystemContext);
+                    Thread.Sleep(1000);
+                }
             }
             #endregion
 
@@ -34,7 +57,7 @@ namespace Server
                 // - The app instance does start a main loop when the server has been started.
                 // - Custom startup code have to be implemented within the event handler of the
                 //   Started event of the app instance.
-                new OpcServerApplication("opc.tcp://localhost:4840/SampleServer", new SampleNodeManager()).Run();
+                // new OpcServerApplication("opc.tcp://localhost:4840/SampleServer", new SampleNodeManager()).Run();
             }
             #endregion
 
